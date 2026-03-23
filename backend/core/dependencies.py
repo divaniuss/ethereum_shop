@@ -1,8 +1,8 @@
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from backend.database import db
-from backend.config import SECRET_KEY, ALGORITHM
+from backend.db.database import db
+from backend.core.config import SECRET_KEY, ALGORITHM
 
 security = HTTPBearer()
 
@@ -26,4 +26,10 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         print("user missing")
         raise HTTPException(status_code=401, detail="User not found")
 
+    return user
+
+def get_admin_user(user: dict = Depends(get_current_user)):
+    if not user.get("is_admin"):
+        print("admin required")
+        raise HTTPException(status_code=403, detail="admin required")
     return user

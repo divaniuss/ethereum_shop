@@ -1,16 +1,14 @@
-import os
 import secrets
 from datetime import datetime, timedelta, timezone
 import jwt
-from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from web3 import Web3
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from backend.database import db
-from backend.config import SECRET_KEY, ALGORITHM
+from backend.db.database import db
+from backend.core.config import SECRET_KEY, ALGORITHM
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 w3 = Web3()

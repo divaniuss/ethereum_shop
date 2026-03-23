@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
-from backend.dependencies import get_current_user
-from backend.database import db
+from backend.core.dependencies import get_current_user
+from backend.db.database import db
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 

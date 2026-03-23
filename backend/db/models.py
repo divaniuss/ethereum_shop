@@ -13,8 +13,10 @@ class UserSchema(BaseModel):
 class CatalogItem(BaseModel):
     id: str = Field(alias="_id")
     name: str
+    description: str
     price_eth: float
     stock_quantity: int
+    image_url: str
 
 class OrderItem(BaseModel):
     product_id: str
@@ -27,5 +29,5 @@ class OrderSchema(BaseModel):
     items: List[OrderItem]
     total_price: float
     status: str
-    shipping_address: Optional[str] = None
+    shipping_address: str
     tx_hash: Optional[str] = None
