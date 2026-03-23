@@ -1,9 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from datetime import datetime
 
 class UserSchema(BaseModel):
     wallet_address: str
-    nonce: str
+    nonce: Optional[str] = None
+    nonce_created_at: Optional[datetime] = None
     is_admin: bool = False
     username: Optional[str] = None
     shipping_address: Optional[str] = None
