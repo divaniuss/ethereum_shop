@@ -1,9 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from bson import ObjectId
+import cloudinary
+import cloudinary.uploader
+from dotenv import load_dotenv
+
 from backend.core.dependencies import get_current_user, get_admin_user
 from backend.db.database import db
+
+
+load_dotenv()
+
+#Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
@@ -15,14 +31,35 @@ class CatalogCreate(BaseModel):
     description: str
     price_eth: float
     stock_quantity: int
-    image_url: str
+    image_urls: List[str]
+
 
 class CatalogUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price_eth: Optional[float] = None
     stock_quantity: Optional[int] = None
-    image_url: Optional[str] = None
+    image_urls: Optional[List[str]] = None
+
+
+@router.post("/upload")
+async def upload_images(files: List[UploadFile] = File(...), admin: dict = Depends(get_admin_user)):
+
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded")
+
+    urls = []
+    for file in files:
+        try:
+
+            result = cloudinary.uploader.upload(file.file)
+
+            urls.append(result["secure_url"])
+        except Exception as e:
+            print(f"Cloudinary upload error: {e}")
+            raise HTTPException(status_code=500, detail="Failed to upload image to cloud")
+
+    return {"image_urls": urls}
 
 
 @router.get("/")

@@ -16,7 +16,7 @@ class CatalogItem(BaseModel):
     description: str
     price_eth: float
     stock_quantity: int
-    image_url: str
+    image_urls: List[str]
 
 class OrderItem(BaseModel):
     product_id: str

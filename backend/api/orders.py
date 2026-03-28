@@ -12,7 +12,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 
 w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:7545'))
 
-CONTRACT_ADDRESS = w3.to_checksum_address("0xCA406a4678d0BEc8b7C4bcF18bAA9A9859d947C8")
+CONTRACT_ADDRESS = w3.to_checksum_address("0xAcbFc5E4EeD629A75dde2f14719e35FefC12D578")
 
 
 CONTRACT_ABI = [

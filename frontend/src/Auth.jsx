@@ -7,7 +7,7 @@ export default function Auth() {
   const [token, setToken] = useState('');
   const navigate = useNavigate();
 
-  const CONTRACT_ADDRESS = "0xCA406a4678d0BEc8b7C4bcF18bAA9A9859d947C8";
+  const CONTRACT_ADDRESS = "0xAcbFc5E4EeD629A75dde2f14719e35FefC12D578";
 
   const handleConnect = async () => {
     try {

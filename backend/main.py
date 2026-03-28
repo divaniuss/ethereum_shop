@@ -9,6 +9,7 @@ from backend.api.profile import router as profile_router
 from backend.api.catalog import router as catalog_router
 from backend.api.orders import router as orders_router
 from backend.db.database import client
+from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,7 +34,7 @@ app.add_middleware(
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(catalog_router)
