@@ -105,7 +105,7 @@ export default function Cart() {
 
             const receipt = await tx.wait();
 
-е
+
             const patchRes = await fetch(`${API_URL}/orders/${orderId}`, {
                 method: 'PATCH',
                 headers: {
