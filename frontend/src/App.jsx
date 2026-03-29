@@ -4,19 +4,17 @@ import Home from './pages/Home';
 import Catalog from './pages/Catalog';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
+import Cart from './pages/Cart';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <BrowserRouter>
       <Header />
-
       <main className="min-h-screen">
         <Routes>
-
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />
-
 
           <Route
             path="/profile"
@@ -27,6 +25,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/admin"
