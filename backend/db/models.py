@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 class UserSchema(BaseModel):
     wallet_address: str
@@ -31,3 +31,4 @@ class OrderSchema(BaseModel):
     status: str
     shipping_address: str
     tx_hash: Optional[str] = None
+    created_at: datetime.now(timezone.utc)
