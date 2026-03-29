@@ -92,7 +92,8 @@ async def verify_signature(req: VerifyRequest):
             )
 
             token = create_jwt_token({"sub": address})
-            return {"access_token": token, "token_type": "bearer"}
+            is_admin = user.get("is_admin", False)
+            return {"access_token": token, "token_type": "bearer", "is_admin": is_admin}
         else:
             raise HTTPException(status_code=401, detail="Invalid signature")
 

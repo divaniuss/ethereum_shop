@@ -1,16 +1,44 @@
-import { Routes, Route } from 'react-router-dom';
-import Auth from './Auth';
-
-function Catalog() {
-  return <div style={{ padding: '20px' }}><h2>catalog page</h2></div>;
-}
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Home from './pages/Home';
+import Catalog from './pages/Catalog';
+import Profile from './pages/Profile';
+import Admin from './pages/Admin';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Auth />} />
-      <Route path="/catalog" element={<Catalog />} />
-    </Routes>
+    <BrowserRouter>
+      <Header />
+
+      <main className="min-h-screen">
+        <Routes>
+
+          <Route path="/" element={<Home />} />
+          <Route path="/catalog" element={<Catalog />} />
+
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
+    </BrowserRouter>
   );
 }
 

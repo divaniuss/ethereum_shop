@@ -1,0 +1,3 @@
+export default function Profile() {
+    return <div className="max-w-7xl mx-auto px-6 py-10">Тут будет история заказов и адрес 📦</div>;
+}
