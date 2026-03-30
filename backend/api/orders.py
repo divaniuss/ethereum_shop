@@ -7,12 +7,16 @@ from decimal import Decimal
 from pymongo.errors import DuplicateKeyError
 from backend.core.dependencies import get_current_user, get_admin_user
 from backend.db.database import db
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
+import pytz
+
+kyiv_tz = pytz.timezone("Europe/Kyiv")
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:7545'))
 
-CONTRACT_ADDRESS = w3.to_checksum_address("0x3092f67Ad731B49fdFc10237b97CD8143C819837")
+CONTRACT_ADDRESS = w3.to_checksum_address("0x94bb8b5127a3De0228Aa8133F9572b92C5c6ac12")
 
 
 CONTRACT_ABI = [
@@ -102,7 +106,7 @@ async def create_order(order_data: OrderCreate, user: dict = Depends(get_current
             "status": "pending",
             "shipping_address": address,
             "tx_hash": None,
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(kyiv_tz)
         }
 
         result = await db.orders.insert_one(new_order)

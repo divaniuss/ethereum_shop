@@ -73,7 +73,6 @@ export default function Product() {
 
 
                 <div className="flex flex-col gap-4 sticky top-28">
-
                     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden h-[400px] flex items-center justify-center relative p-6">
                         <img
                             src={images[currentImageIndex]}
@@ -81,7 +80,6 @@ export default function Product() {
                             className="w-full h-full object-contain"
                         />
                     </div>
-
 
                     {images.length > 1 && (
                         <div className="flex gap-4 overflow-x-auto pb-2">
@@ -104,16 +102,14 @@ export default function Product() {
                 <div className="flex flex-col">
                     <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
 
-                    <div className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-6">
-                        {product.price_eth} ETH
+                    <div className="mb-6 border-b border-gray-100 pb-6">
+                        <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500">
+                            {product.price_eth} ETH
+                        </span>
                     </div>
 
-                    <div className="prose prose-sm text-gray-600 mb-8">
-                        <p className="whitespace-pre-line leading-relaxed">{product.description}</p>
-                    </div>
 
-
-                    <div className="mb-8">
+                    <div className="mb-6 flex items-center">
                         <div className="inline-block bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 text-sm">
                             <span className="text-gray-500 mr-2">В наличии:</span>
                             <span className="font-bold text-gray-900">{product.stock_quantity} шт.</span>
@@ -121,18 +117,26 @@ export default function Product() {
                     </div>
 
 
-                    {token ? (
-                        <button
-                            onClick={() => addToCart(product)}
-                            className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-sm"
-                        >
-                            Добавить в корзину
-                        </button>
-                    ) : (
-                        <div className="w-full bg-gray-50 text-gray-500 py-4 rounded-xl font-medium text-center border border-gray-200">
-                            Подключите кошелек для покупки
-                        </div>
-                    )}
+                    <div className="mb-8">
+                        {token ? (
+                            <button
+                                onClick={() => addToCart(product)}
+                                className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-sm"
+                            >
+                                Добавить в корзину
+                            </button>
+                        ) : (
+                            <div className="w-full bg-gray-50 text-gray-500 py-4 rounded-xl font-medium text-center border border-gray-200">
+                                Подключите кошелек для покупки
+                            </div>
+                        )}
+                    </div>
+
+
+                    <div className="prose prose-sm text-gray-600 pt-6 border-t border-gray-100">
+                        <h3 className="text-lg font-bold text-gray-900 mb-3">Описание</h3>
+                        <p className="whitespace-pre-line leading-relaxed">{product.description}</p>
+                    </div>
                 </div>
 
             </div>

@@ -13,7 +13,6 @@ export default function Admin() {
         stock: ''
     });
 
-
     const [imageFiles, setImageFiles] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -29,16 +28,42 @@ export default function Admin() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!formData.name.trim() || !formData.description.trim()) {
+            setMessage({ text: 'Название и описание не могут быть пустыми или состоять только из пробелов', type: 'error' });
+            return;
+        }
+
+        const price = parseFloat(formData.price);
+        const volume = parseInt(formData.volume, 10);
+        const stock = parseInt(formData.stock, 10);
+
+        if (isNaN(price) || price <= 0) {
+            setMessage({ text: 'Цена должна быть больше нуля', type: 'error' });
+            return;
+        }
+
+        if (isNaN(volume) || volume <= 0) {
+            setMessage({ text: 'Объем должен быть больше нуля', type: 'error' });
+            return;
+        }
+
+        if (isNaN(stock) || stock < 0) {
+            setMessage({ text: 'Количество на складе не может быть отрицательным (минимум 0)', type: 'error' });
+            return;
+        }
+
+
         if (imageFiles.length === 0) {
             setMessage({ text: 'Пожалуйста, выберите хотя бы одно изображение', type: 'error' });
             return;
         }
 
+
+
         setLoading(true);
         setMessage({ text: '', type: '' });
 
         try {
-
             const imageFormData = new FormData();
             imageFiles.forEach((file) => {
                 imageFormData.append('files', file);
@@ -48,7 +73,6 @@ export default function Admin() {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
-
                 },
                 body: imageFormData
             });
@@ -59,16 +83,15 @@ export default function Admin() {
             }
 
             const uploadData = await uploadResponse.json();
-            const imageUrls = uploadData.image_urls; //от Cloudinary
-
+            const imageUrls = uploadData.image_urls;
 
             const productData = {
-                name: formData.name,
-                description: formData.description,
-                price_eth: parseFloat(formData.price),
-                stock_quantity: parseInt(formData.stock, 10),
+                name: formData.name.trim(),
+                description: formData.description.trim(),
+                price_eth: price,
+                stock_quantity: stock,
                 image_urls: imageUrls
-                // volume: parseInt(formData.volume, 10)
+                // volume: volume
             };
 
             const createResponse = await fetch(`${API_URL}/catalog/`, {
@@ -87,7 +110,6 @@ export default function Admin() {
 
             setMessage({ text: 'Товар успешно добавлен в каталог!', type: 'success' });
 
-
             setFormData({ name: '', description: '', price: '', volume: '', stock: '' });
             setImageFiles([]);
             document.getElementById('file-upload').value = '';
@@ -105,7 +127,7 @@ export default function Admin() {
             <h1 className="text-3xl font-bold tracking-tight mb-8">Добавление товара</h1>
 
             {message.text && (
-                <div className={`p-4 mb-6 rounded-lg text-sm font-medium ${message.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                <div className={`p-4 mb-6 rounded-lg text-sm font-medium ${message.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
                     {message.text}
                 </div>
             )}
@@ -134,8 +156,9 @@ export default function Admin() {
                 <div className="grid grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Цена (в ETH)</label>
+                        {/* Добавлен min="0.000001" для предотвращения отрицательных чисел */}
                         <input
-                            type="number" step="0.0001" name="price" required
+                            type="number" step="0.0001" min="0.000001" name="price" required
                             value={formData.price} onChange={handleChange}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition"
                             placeholder="0.01"
@@ -144,8 +167,9 @@ export default function Admin() {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Объем (мл)</label>
+                        {/* Добавлен min="1" */}
                         <input
-                            type="number" name="volume" required
+                            type="number" min="1" name="volume" required
                             value={formData.volume} onChange={handleChange}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition"
                             placeholder="500"
@@ -155,8 +179,9 @@ export default function Admin() {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Количество на складе (шт)</label>
+                    {/* Добавлен min="0" (0 можно, отрицательные нельзя) */}
                     <input
-                        type="number" name="stock" required
+                        type="number" min="0" name="stock" required
                         value={formData.stock} onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition"
                         placeholder="100"
@@ -175,9 +200,13 @@ export default function Admin() {
 
                 <button
                     type="submit" disabled={loading}
-                    className={`w-full py-3 rounded-lg text-white font-medium transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'}`}
+                    className={`w-full py-3 rounded-lg text-white font-medium transition flex justify-center items-center ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'}`}
                 >
-                    {loading ? 'Загрузка...' : 'Добавить товар в каталог'}
+                    {loading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    ) : (
+                        'Добавить товар в каталог'
+                    )}
                 </button>
             </form>
         </div>

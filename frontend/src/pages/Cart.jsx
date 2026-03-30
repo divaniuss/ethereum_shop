@@ -5,7 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { ethers } from 'ethers';
 
 //remix contract adres and function name
-const CONTRACT_ADDRESS = "0x3092f67Ad731B49fdFc10237b97CD8143C819837";
+const CONTRACT_ADDRESS = "0x94bb8b5127a3De0228Aa8133F9572b92C5c6ac12";
 const CONTRACT_ABI = [
     "function payForOrder(string memory orderId) public payable"
 ];
@@ -170,11 +170,15 @@ export default function Cart() {
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-8">Оформление заказа</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                {/* Левая колонка: Список товаров */}
                 <div className="lg:col-span-2 space-y-4">
                     {cartItems.map((item) => (
-                        <div key={item._id} className="flex items-center gap-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                            <img src={item.image_urls?.[0] || 'https://via.placeholder.com/150'} alt={item.name} className="w-24 h-24 object-cover rounded-xl bg-white" />
+                        <div key={item._id}
+                             className="flex items-center gap-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                            <img
+                                src={item.image_urls?.[0] || 'https://via.placeholder.com/150'}
+                                alt={item.name}
+                                className="w-24 h-32 flex-shrink-0 object-contain rounded-xl bg-white"
+                            />
                             <div className="flex-grow">
                                 <Link to={`/product/${item._id}`}>
                                     <h3 className="text-lg font-bold text-gray-900 hover:text-blue-600 transition">{item.name}</h3>
@@ -182,15 +186,22 @@ export default function Cart() {
                                 <p className="text-sm text-gray-500 mb-3">{item.price_eth} ETH за 1 шт.</p>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 p-1">
-                                        <button onClick={() => decreaseQuantity(item._id)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition text-gray-600 font-bold">-</button>
-                                        <span className="w-8 text-center font-medium text-sm text-gray-900">{item.quantity}</span>
-                                        <button onClick={() => addToCart(item)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition text-gray-600 font-bold">+</button>
+                                        <button onClick={() => decreaseQuantity(item._id)}
+                                                className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition text-gray-600 font-bold">-
+                                        </button>
+                                        <span
+                                            className="w-8 text-center font-medium text-sm text-gray-900">{item.quantity}</span>
+                                        <button onClick={() => addToCart(item)}
+                                                className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition text-gray-600 font-bold">+
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                             <div className="text-right flex flex-col justify-between h-24">
                                 <p className="text-lg font-bold text-gray-900">{(item.price_eth * item.quantity).toFixed(4)} ETH</p>
-                                <button onClick={() => removeFromCart(item._id)} className="text-sm font-medium text-red-500 hover:text-red-700 transition">Удалить</button>
+                                <button onClick={() => removeFromCart(item._id)}
+                                        className="text-sm font-medium text-red-500 hover:text-red-700 transition">Удалить
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -205,7 +216,8 @@ export default function Cart() {
                         <span>{getCartTotal().toFixed(4)} ETH</span>
                     </div>
 
-                    <div className="flex justify-between items-center mb-6 text-gray-900 font-bold text-xl border-t border-gray-200 pt-4">
+                    <div
+                        className="flex justify-between items-center mb-6 text-gray-900 font-bold text-xl border-t border-gray-200 pt-4">
                         <span>К оплате</span>
                         <span>{getCartTotal().toFixed(4)} ETH</span>
                     </div>

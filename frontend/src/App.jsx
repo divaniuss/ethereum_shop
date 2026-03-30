@@ -6,6 +6,7 @@ import Product from './pages/Product';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Cart from './pages/Cart';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -43,6 +44,10 @@ function App() {
                 <Admin />
               </ProtectedRoute>
             }
+          />
+          <Route
+              path="*"
+              element={<NotFound />}
           />
         </Routes>
       </main>

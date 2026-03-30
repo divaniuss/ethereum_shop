@@ -17,14 +17,14 @@ export default function ProductCard({ product }) {
                 <img
                     src={imageUrl}
                     alt={product.name}
-                    className="h-full w-auto object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="h-[90%] w-auto object-cover group-hover:scale-105 transition-transform duration-500"
                 />
             </Link>
 
             <div className="p-6 flex flex-col flex-grow">
                 <div className="mb-2">
                     <Link to={`/product/${product._id}`}>
-                        <h3 className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                        <h3 className="text-lg font-bold text-gray-900 hover:text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 transition-colors">
                             {product.name}
                         </h3>
                     </Link>

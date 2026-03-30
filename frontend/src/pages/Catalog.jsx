@@ -45,7 +45,7 @@ export default function Catalog() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 pt-4 pb-10">
+        <div className="max-w-7xl mx-auto px-6 pt-2 pb-10">
             <div className="flex justify-between items-end mb-8">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Наш Каталог</h1>
