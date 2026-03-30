@@ -17,9 +17,18 @@ export default function Cart() {
     const navigate = useNavigate();
 
     const [address, setAddress] = useState('');
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
+
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+
+    const [citySearch, setCitySearch] = useState('');
+    const [cities, setCities] = useState([]);
+    const [selectedCity, setSelectedCity] = useState(null);
+    const [warehouses, setWarehouses] = useState([]);
+    const [selectedWarehouse, setSelectedWarehouse] = useState('');
+    const [loadingWarehouses, setLoadingWarehouses] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -32,6 +41,9 @@ export default function Cart() {
                     const data = await res.json();
                     if (data.shipping_address) {
                         setAddress(data.shipping_address);
+                        setIsEditingAddress(false);
+                    } else {
+                        setIsEditingAddress(true);
                     }
                 }
             } catch (err) {
@@ -41,13 +53,68 @@ export default function Cart() {
         fetchProfile();
     }, [token, API_URL]);
 
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (citySearch.trim().length >= 2 && !selectedCity) {
+                try {
+                    const res = await fetch(`${API_URL}/delivery/cities?q=${citySearch}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setCities(data);
+                    }
+                } catch (err) {
+                    console.error("Ошибка поиска городов:", err);
+                }
+            } else {
+                setCities([]);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [citySearch, API_URL, selectedCity]);
+
+    const handleCitySelect = async (city) => {
+        setSelectedCity(city);
+        setCitySearch(city.description);
+        setCities([]);
+        setWarehouses([]);
+        setSelectedWarehouse('');
+        setLoadingWarehouses(true);
+
+        try {
+            const res = await fetch(`${API_URL}/delivery/warehouses?city_ref=${city.ref}`);
+            if (res.ok) {
+                const data = await res.json();
+                setWarehouses(data);
+            } else {
+                console.error("Сервер вернул ошибку при загрузке отделений");
+            }
+        } catch (err) {
+            console.error("Ошибка загрузки отделений:", err);
+        } finally {
+            setLoadingWarehouses(false);
+        }
+    };
+
     const handleCheckout = async () => {
         setError(null);
 
-        if (!address.trim() || address.trim().length < 5) {
+        let finalAddress = address;
+
+        if (isEditingAddress) {
+            if (!selectedCity || !selectedWarehouse) {
+                setError("Пожалуйста, выберите город и отделение Новой Почты.");
+                return;
+            }
+
+            finalAddress = `${selectedCity.description}, ${selectedWarehouse}`;
+        }
+
+        if (!finalAddress.trim() || finalAddress.trim().length < 5) {
             setError("Пожалуйста, укажите корректный адрес доставки (минимум 5 символов).");
             return;
         }
+
         if (!window.ethereum) {
             setError("MetaMask не установлен!");
             return;
@@ -64,7 +131,6 @@ export default function Cart() {
                 throw new Error("Адрес в MetaMask не совпадает с вашим аккаунтом на сайте. Пожалуйста, переключите аккаунт в расширении.");
             }
 
-
             const estimatedTotal = getCartTotal();
             const estimatedWei = ethers.parseEther(estimatedTotal.toString());
             const balance = await provider.getBalance(signer.address);
@@ -78,14 +144,13 @@ export default function Cart() {
                 quantity: item.quantity
             }));
 
-
             const orderRes = await fetch(`${API_URL}/orders/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ items, shipping_address: address.trim() })
+                body: JSON.stringify({ items, shipping_address: finalAddress.trim() })
             });
 
             if (!orderRes.ok) {
@@ -96,15 +161,12 @@ export default function Cart() {
             const orderData = await orderRes.json();
             const orderId = orderData._id;
 
-
             const exactAmountInWei = ethers.parseEther(orderData.total_price.toString());
-
 
             const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
             const tx = await contract.payForOrder(orderId, { value: exactAmountInWei });
 
             const receipt = await tx.wait();
-
 
             const patchRes = await fetch(`${API_URL}/orders/${orderId}`, {
                 method: 'PATCH',
@@ -207,7 +269,6 @@ export default function Cart() {
                     ))}
                 </div>
 
-                {/* Правая колонка: Итоговый чек и адрес */}
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 h-fit sticky top-28">
                     <h2 className="text-xl font-bold text-gray-900 mb-6">Итого</h2>
 
@@ -223,15 +284,114 @@ export default function Cart() {
                     </div>
 
                     <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Адрес доставки <span className="text-red-500">*</span></label>
-                        <textarea
-                            rows="3"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            placeholder="Город, улица, дом, индекс..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black outline-none text-sm resize-none"
-                            disabled={isProcessing}
-                        ></textarea>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Адрес доставки <span className="text-red-500">*</span>
+                        </label>
+
+                        {!isEditingAddress && address ? (
+                            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                <p className="text-xs text-gray-500 mb-1">Текущий адрес:</p>
+                                <p className="text-sm font-medium text-gray-900">{address}</p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsEditingAddress(true);
+                                        setCitySearch('');
+                                        setCities([]);
+                                        setSelectedCity(null);
+                                        setWarehouses([]);
+                                        setSelectedWarehouse('');
+                                        setError(null);
+                                    }}
+                                    className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+                                >
+                                    Изменить адрес доставки
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                <span className="block text-xs font-bold text-red-600 mb-3 uppercase tracking-wide">Доставка (Новая Почта)</span>
+
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Город</label>
+                                        <input
+                                            type="text"
+                                            value={citySearch}
+                                            onChange={(e) => {
+                                                setCitySearch(e.target.value);
+                                                setSelectedCity(null);
+                                                setWarehouses([]);
+                                                setSelectedWarehouse('');
+                                            }}
+                                            placeholder={address ? "Начните вводить для изменения..." : "Например: Киев"}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm"
+                                            disabled={isProcessing}
+                                        />
+
+                                        {cities.length > 0 && (
+                                            <ul className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                {cities.map((city) => (
+                                                    <li
+                                                        key={city.ref}
+                                                        onClick={() => handleCitySelect(city)}
+                                                        className="px-3 py-2 text-sm hover:bg-red-50 cursor-pointer transition-colors"
+                                                    >
+                                                        {city.description}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Отделение</label>
+                                        <select
+                                            value={selectedWarehouse}
+                                            onChange={(e) => setSelectedWarehouse(e.target.value)}
+                                            disabled={warehouses.length === 0 || loadingWarehouses || isProcessing}
+                                            className={`w-full px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm transition-colors ${
+                                                (warehouses.length === 0 || loadingWarehouses || isProcessing)
+                                                    ? 'bg-gray-100 cursor-not-allowed text-gray-400'
+                                                    : 'bg-white focus:ring-2 focus:ring-red-500'
+                                            }`}
+                                        >
+                                            <option value="" disabled>
+                                                {loadingWarehouses
+                                                    ? 'Загружаем отделения...'
+                                                    : warehouses.length === 0
+                                                        ? 'Сначала выберите город ИЗ СПИСКА сверху'
+                                                        : 'Выберите отделение из списка...'}
+                                            </option>
+
+                                            {warehouses.map((w) => (
+                                                <option key={w.ref} value={w.description}>
+                                                    {w.description}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {address && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsEditingAddress(false);
+                                                setCitySearch('');
+                                                setCities([]);
+                                                setSelectedCity(null);
+                                                setWarehouses([]);
+                                                setSelectedWarehouse('');
+                                                setError(null);
+                                            }}
+                                            className="text-sm font-medium text-gray-500 hover:text-gray-700 transition"
+                                        >
+                                            Отменить изменение
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {error && (

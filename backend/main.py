@@ -8,6 +8,7 @@ from backend.api.auth import router as auth_router, limiter
 from backend.api.profile import router as profile_router
 from backend.api.catalog import router as catalog_router
 from backend.api.orders import router as orders_router
+from backend.api.delivery import router as delivery_router
 from backend.db.database import client
 from fastapi.staticfiles import StaticFiles
 from backend.db.database import db
@@ -83,3 +84,4 @@ app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(catalog_router)
 app.include_router(orders_router)
+app.include_router(delivery_router)
